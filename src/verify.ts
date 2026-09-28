@@ -57,10 +57,10 @@ export async function verify(
 
     const { org, space, apiEndpoint, region } = getCfTarget({ exec });
     log.info("Resolved target");
-    log.info(`  API Endpoint: \t${apiEndpoint ?? "unknown"}`);
-    log.info(`  CF Region: \t${region ?? "unknown"}`);
-    log.info(`  CF Org: \t${org}`);
-    log.info(`  CF Space: \t${space}`);
+    log.info(`  ${"API Endpoint:".padEnd(14)}${apiEndpoint ?? "unknown"}`);
+    log.info(`  ${"CF Region:".padEnd(14)}${region ?? "unknown"}`);
+    log.info(`  ${"CF Org:".padEnd(14)}${org}`);
+    log.info(`  ${"CF Space:".padEnd(14)}${space}`);
 
     const target = allowedTargets.find((candidate) => candidate.org === org && candidate.space === space);
     if (!target) {
@@ -72,7 +72,7 @@ export async function verify(
     if (target.region !== undefined) {
       if (region === undefined) {
         log.error(
-          `Deploys to ${org}/${space} require region "${target.region}", but no region could be extracted from ` +
+          `Deployments to ${org}/${space} require region "${target.region}", but no region could be extracted from ` +
             `API endpoint "${apiEndpoint ?? "<missing>"}" — expected an endpoint matching \`api.cf.<region>.<domain>\`.`
         );
         return 1;
@@ -88,11 +88,11 @@ export async function verify(
 
     if (target.requireBranch !== undefined || target.requireUpToDate) {
       const branch = getCurrentBranch({ exec });
-      log.info(`  Git Branch: \t${branch}`);
+      log.info(`  ${"Git Branch:".padEnd(14)}${branch}`);
 
       if (target.requireBranch !== undefined && branch !== target.requireBranch) {
         log.error(
-          `Current branch is "${colors.red(branch)}". Deploys to ${org}/${space} are only allowed from the ` +
+          `Current branch is "${colors.red(branch)}". Deployments to ${org}/${space} are only allowed from the ` +
             `"${colors.green(target.requireBranch)}" branch.`
         );
         return 1;
