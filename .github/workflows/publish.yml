@@ -7,6 +7,11 @@
 #          `npm publish --provenance`; `contents: read` is otherwise
 #          sufficient for checkout. Requires the package to be registered
 #          as a Trusted Publisher on npmjs.com beforehand.
+# Note: OIDC trusted publishing requires npm CLI >=11.5.1. Node 22.x
+#          currently bundles npm 10.x, which silently skips OIDC auth and
+#          sends an unauthenticated publish request (surfaces as a
+#          registry 404, not 401/403). Node 24 bundles npm 11.x, and we
+#          additionally force-upgrade npm as a version-proof guard.
 name: Publish
 
 on:
@@ -24,8 +29,9 @@ jobs:
       - uses: actions/checkout@v7 # v7.0.0
       - uses: actions/setup-node@v7 # v7.0.0
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest # guarantee npm >=11.5.1 for OIDC trusted publishing
       - run: npm ci
       - run: npm run build
       - run: npm test
