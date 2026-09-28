@@ -5,6 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "Ludwig Stockbauer-Muhr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevEpos/cf-safe-deploy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DevEpos/cf-safe-deploy/issues"
+  },
+  "homepage": "https://github.com/DevEpos/cf-safe-deploy#readme",
   "bin": {
     "cf-safe-deploy": "./dist/bin/cf-safe-deploy.js"
   },

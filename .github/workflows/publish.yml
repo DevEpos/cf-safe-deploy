@@ -1,0 +1,32 @@
+# Publish
+#
+# Trigger: a GitHub Release is published.
+# Purpose: build, test and publish the package to npm using npm's OIDC
+#          trusted-publishing flow (no long-lived NPM_TOKEN secret).
+# Security posture: `id-token: write` grants the OIDC token needed for
+#          `npm publish --provenance`; `contents: read` is otherwise
+#          sufficient for checkout. Requires the package to be registered
+#          as a Trusted Publisher on npmjs.com beforehand.
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7 # v7.0.0
+      - uses: actions/setup-node@v7 # v7.0.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm publish --provenance --access public
