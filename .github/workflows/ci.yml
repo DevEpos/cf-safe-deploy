@@ -2,7 +2,7 @@
 #
 # Trigger: push to `main` and pull requests targeting `main`.
 # Purpose: run the project's build and test suite across the supported
-#          Node.js matrix (18, 20, 22) plus a Prettier formatting check.
+#          Node.js matrix (22, 24) plus a Prettier formatting check.
 # Security posture: read-only checkout, no secrets used, minimal
 #          `contents: read` permission.
 name: CI
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v7 # v7.0.0
       - uses: actions/setup-node@v7 # v7.0.0
