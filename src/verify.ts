@@ -56,7 +56,7 @@ export async function verify(
     const { allowedTargets } = loadConfig({ cwd, configPath });
 
     const { org, space, apiEndpoint, region } = getCfTarget({ exec });
-    log.info("Resolved target");
+    log.info("Resolved target >>>");
     log.info(`  ${"API Endpoint:".padEnd(14)}${apiEndpoint ?? "unknown"}`);
     log.info(`  ${"CF Region:".padEnd(14)}${region ?? "unknown"}`);
     log.info(`  ${"CF Org:".padEnd(14)}${org}`);
@@ -88,6 +88,7 @@ export async function verify(
 
     if (target.requireBranch !== undefined || target.requireUpToDate) {
       const branch = getCurrentBranch({ exec });
+      log.info("Resolved Source >>>");
       log.info(`  ${"Git Branch:".padEnd(14)}${branch}`);
 
       if (target.requireBranch !== undefined && branch !== target.requireBranch) {
