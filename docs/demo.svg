@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace">
+  <defs>
+    <clipPath id="round-corners">
+      <rect x="0" y="0" width="800" height="400" rx="12" ry="12" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round-corners)">
+    <rect x="0" y="0" width="800" height="400" fill="#1e1e2e" />
+
+    <rect x="0" y="0" width="800" height="36" fill="#181825" />
+    <circle cx="22" cy="18" r="6" fill="#f38ba8" />
+    <circle cx="44" cy="18" r="6" fill="#f9e2af" />
+    <circle cx="66" cy="18" r="6" fill="#a6e3a1" />
+    <text x="400" y="22" fill="#6c7086" font-size="13" text-anchor="middle">zsh — npm run deploy</text>
+
+    <text font-size="14" fill="#cdd6f4" xml:space="preserve">
+      <tspan x="24" y="66">$ npm run deploy</tspan>
+
+      <tspan x="24" y="96" fill="#89b4fa">🔎  Resolved target</tspan>
+      <tspan x="58" y="118">🔗  API Endpoint: https://api.cf.eu10-004.hana.ondemand.com</tspan>
+      <tspan x="58" y="140">🌍  CF Region:    eu10-004</tspan>
+      <tspan x="58" y="162">🏢  CF Org:       acme-prod</tspan>
+      <tspan x="58" y="184">📦  CF Space:     web-apps</tspan>
+
+      <tspan x="24" y="220" fill="#f38ba8">┌───────────────────────────────────────────────────────┐</tspan>
+      <tspan x="24" y="242"><tspan fill="#f38ba8">│ ⚠️ </tspan><tspan fill="#f38ba8" font-weight="bold">PRODUCTION</tspan><tspan fill="#f38ba8"> DEPLOYMENT TARGET                        │</tspan></tspan>
+      <tspan x="24" y="264" fill="#f38ba8">│ Proceed with caution — this action is not reversible. │</tspan>
+      <tspan x="24" y="286" fill="#f38ba8">└───────────────────────────────────────────────────────┘</tspan>
+
+      <tspan x="24" y="322" fill="#f9e2af">❓  Continue with deploy to acme-prod/web-apps? (y/N): </tspan><tspan fill="#cdd6f4">y</tspan>
+      <tspan x="24" y="344" fill="#a6e3a1">✅  Deploy allowed for acme-prod/web-apps</tspan>
+    </text>
+  </g>
+</svg>

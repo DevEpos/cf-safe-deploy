@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/cf-safe-deploy.svg?style=flat)](https://www.npmjs.com/package/cf-safe-deploy)
 
+![cf-safe-deploy demo: resolved target details, a bordered PRODUCTION deployment warning, and the confirmation prompt](docs/demo.svg)
+
 A safety net for manual Cloud Foundry MTA deployments, meant to run as an npm `predeploy`
 hook. Before your `cf deploy` starts, it
 
