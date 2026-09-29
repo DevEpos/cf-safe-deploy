@@ -39,6 +39,18 @@ describe("addTarget", () => {
     expect(deps.log.info).toHaveBeenCalledWith(expect.stringContaining("acme-dev/web-apps"));
   });
 
+  it("prefixes the success line with the save icon when rich output is enabled", () => {
+    const deps = makeDeps({ files: {} });
+    addTarget({ cwd: "/repo" }, { ...deps, rich: true });
+    expect(deps.log.info).toHaveBeenCalledWith(expect.stringContaining("💾  Added acme-dev/web-apps"));
+  });
+
+  it("falls back to the ASCII tag for the success line when rich output is disabled", () => {
+    const deps = makeDeps({ files: {} });
+    addTarget({ cwd: "/repo" }, { ...deps, rich: false });
+    expect(deps.log.info).toHaveBeenCalledWith(expect.stringContaining("[OK]  Added acme-dev/web-apps"));
+  });
+
   it("appends to an existing config, preserving existing entries verbatim", () => {
     const existing = { allowedTargets: [{ org: "acme-test", space: "web-apps" }] };
     const deps = makeDeps({ files: { "/repo/.cf-safe-deploy.json": JSON.stringify(existing) } });
@@ -97,10 +109,10 @@ describe("addTarget", () => {
     const original = JSON.stringify(existing);
     const deps = makeDeps({ files: { "/repo/.cf-safe-deploy.json": original } });
 
-    const exitCode = addTarget({ cwd: "/repo" }, deps);
+    const exitCode = addTarget({ cwd: "/repo" }, { ...deps, rich: true });
 
     expect(exitCode).toBe(1);
-    expect(deps.log.error).toHaveBeenCalledWith(expect.stringContaining("acme-dev/web-apps"));
+    expect(deps.log.error).toHaveBeenCalledWith(expect.stringContaining("❌  Target acme-dev/web-apps"));
     expect(deps.writeFile).not.toHaveBeenCalled();
     expect(deps.files["/repo/.cf-safe-deploy.json"]).toBe(original);
   });

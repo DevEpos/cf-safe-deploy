@@ -3,7 +3,7 @@ import path from "node:path";
 import { exec as defaultExec, type ExecFn } from "./exec.js";
 import { CONFIG_FILE_NAME, findConfigPath, validateConfig, type ExistsFn, type ReadFileFn } from "./config.js";
 import { getCfTarget } from "./cf-target.js";
-import { createLogger, type Logger } from "./log.js";
+import { createLogger, colorsEnabled, icon, type Logger } from "./log.js";
 
 export type ExitCode = 0 | 1;
 
@@ -27,6 +27,7 @@ export interface AddTargetDeps {
   exists?: ExistsFn;
   readFile?: ReadFileFn;
   writeFile?: WriteFileFn;
+  rich?: boolean;
 }
 
 const isSameRegion = (a: unknown, region: string): boolean =>
@@ -54,7 +55,8 @@ export function addTarget(
     log = createLogger("cf-safe-deploy"),
     exists = existsSync,
     readFile = (file: string) => readFileSync(file, "utf8"),
-    writeFile = (file: string, content: string) => writeFileSync(file, content)
+    writeFile = (file: string, content: string) => writeFileSync(file, content),
+    rich = colorsEnabled()
   }: AddTargetDeps = {}
 ): ExitCode {
   try {
@@ -85,8 +87,8 @@ export function addTarget(
     );
     if (duplicate) {
       log.error(
-        `Target ${org}/${space}${region ? ` (region "${region}")` : ""} is already whitelisted in "${file}": ` +
-          JSON.stringify(duplicate)
+        `${icon("fail", rich)}  Target ${org}/${space}${region ? ` (region "${region}")` : ""} is already ` +
+          `whitelisted in "${file}": ${JSON.stringify(duplicate)}`
       );
       return 1;
     }
@@ -100,10 +102,10 @@ export function addTarget(
 
     writeFile(file, `${JSON.stringify({ allowedTargets: [...allowedTargets, newTarget] }, null, 2)}\n`);
 
-    log.info(`Added ${org}/${space} to ${file}`);
+    log.info(`${icon("save", rich)}  Added ${org}/${space} to ${file}`);
     return 0;
   } catch (err) {
-    log.error(err instanceof Error ? err.message : String(err));
+    log.error(`${icon("fail", rich)}  ${err instanceof Error ? err.message : String(err)}`);
     return 1;
   }
 }

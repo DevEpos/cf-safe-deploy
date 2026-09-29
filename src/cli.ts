@@ -2,7 +2,7 @@ import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { verify as defaultVerify, type ExitCode, type VerifyDeps } from "./verify.js";
 import { addTarget as defaultAddTarget, type AddTargetDeps } from "./add-target.js";
-import { createLogger, type Logger } from "./log.js";
+import { createLogger, colorsEnabled, icon, type Logger } from "./log.js";
 
 export const USAGE = `Usage: cf-safe-deploy [options]
        cf-safe-deploy add-target [options]
@@ -125,7 +125,7 @@ export async function main(argv: string[] = process.argv.slice(2), overrides: Ma
   try {
     args = parseCliArgs(argv);
   } catch (err) {
-    log.error(err instanceof Error ? err.message : String(err));
+    log.error(`${icon("fail", colorsEnabled())}  ${err instanceof Error ? err.message : String(err)}`);
     print(USAGE);
     return 1;
   }

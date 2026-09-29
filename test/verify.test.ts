@@ -69,7 +69,25 @@ describe("verify", () => {
   it("allows a whitelisted target after confirmation", async () => {
     const deps = makeDeps({ answer: "y" });
     expect(await verify({}, { ...deps, ...config() })).toBe(0);
-    expect(deps.ask).toHaveBeenCalledWith(expect.stringContaining("Continue with deploy to acme-dev/web-apps? (y/N)"));
+    expect(deps.ask).toHaveBeenCalledWith(
+      expect.stringContaining("Continue with deployment to acme-dev/web-apps? (y/N)")
+    );
+  });
+
+  it("prefixes the confirmation prompt with the confirm icon when rich output is enabled", async () => {
+    const deps = makeDeps({ answer: "y" });
+    expect(await verify({}, { ...deps, rich: true, ...config() })).toBe(0);
+    expect(deps.ask).toHaveBeenCalledWith(
+      expect.stringContaining("❓  Continue with deployment to acme-dev/web-apps? (y/N)")
+    );
+  });
+
+  it("falls back to the ASCII confirm tag when rich output is disabled", async () => {
+    const deps = makeDeps({ answer: "y" });
+    expect(await verify({}, { ...deps, rich: false, ...config() })).toBe(0);
+    expect(deps.ask).toHaveBeenCalledWith(
+      expect.stringContaining("[?]  Continue with deployment to acme-dev/web-apps? (y/N)")
+    );
   });
 
   it("accepts 'yes' case-insensitively", async () => {
@@ -158,9 +176,26 @@ describe("verify", () => {
 
   it("prints a production banner for warnProduction targets", async () => {
     const deps = makeDeps({ answer: "y" });
-    expect(await verify({}, { ...deps, ...config({ warnProduction: true }) })).toBe(0);
+    expect(await verify({}, { ...deps, rich: true, ...config({ warnProduction: true }) })).toBe(0);
+    const warnings = deps.log.warn.mock.calls.flat().join("\n");
+    expect(warnings).toContain("⚠️");
+    expect(warnings).toContain("PRODUCTION");
+    expect(warnings).toContain("┌");
+    expect(warnings).toContain("┐");
+    expect(warnings).toContain("└");
+    expect(warnings).toContain("┘");
+    expect(warnings).toContain("│");
+    expect(deps.log.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to ASCII borders for the production banner when rich output is disabled", async () => {
+    const deps = makeDeps({ answer: "y" });
+    expect(await verify({}, { ...deps, rich: false, ...config({ warnProduction: true }) })).toBe(0);
     const warnings = deps.log.warn.mock.calls.flat().join("\n");
     expect(warnings).toContain("PRODUCTION");
+    expect(warnings).toContain("+");
+    expect(warnings).toContain("|");
+    expect(warnings).not.toMatch(/[┌┐└┘│]/);
   });
 
   it("does not run git commands when no git rule is configured", async () => {
@@ -225,6 +260,29 @@ describe("verify", () => {
     await verify({}, { ...deps, ...config() });
     const infos = deps.log.info.mock.calls.flat().join("\n");
     expect(infos).toContain("unknown");
+  });
+
+  it("prints icon-led section/success lines when rich output is enabled", async () => {
+    const deps = makeDeps({ answer: "y" });
+    expect(await verify({}, { ...deps, rich: true, ...config() })).toBe(0);
+    const infos = deps.log.info.mock.calls.flat().join("\n");
+    expect(infos).toContain("🔎  Resolved target");
+    expect(infos).toContain("✅  Deployment allowed for acme-dev/web-apps");
+  });
+
+  it("falls back to ASCII tags when rich output is disabled", async () => {
+    const deps = makeDeps({ answer: "y" });
+    expect(await verify({}, { ...deps, rich: false, ...config() })).toBe(0);
+    const infos = deps.log.info.mock.calls.flat().join("\n");
+    expect(infos).toContain("[..]  Resolved target");
+    expect(infos).toContain("[OK]  Deployment allowed for acme-dev/web-apps");
+    expect(infos).not.toMatch(/[\u{1F300}-\u{1FAFF}☀-➿]/u);
+  });
+
+  it("prefixes error lines with the fail icon", async () => {
+    const deps = makeDeps({ org: "acme-prod", space: "other-space" });
+    await verify({}, { ...deps, rich: true, ...config() });
+    expect(deps.log.error).toHaveBeenCalledWith(expect.stringContaining("❌  Target org"));
   });
 
   it("fails with exit code 1 when cf target errors", async () => {

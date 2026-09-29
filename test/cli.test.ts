@@ -106,6 +106,14 @@ describe("main", () => {
     expect(overrides.verify).not.toHaveBeenCalled();
   });
 
+  it("prefixes the parse-error line with the fail icon or its ASCII fallback", async () => {
+    const overrides = makeOverrides();
+    await main(["--frobnicate"], overrides);
+    const [message] = overrides.log.error.mock.calls[0];
+    expect(message).toMatch(/^(❌|\[FAIL\])  /);
+    expect(message).toContain("--frobnicate");
+  });
+
   it("forwards parsed options to verify", async () => {
     const overrides = makeOverrides();
     expect(await main(["--yes", "--config", "c.json"], overrides)).toBe(0);
