@@ -83,15 +83,15 @@ function orderedOutputLines(deps: Deps): string[] {
   deps.ask.mock.calls.forEach((call: unknown[], i) => {
     calls.push({ order: deps.ask.mock.invocationCallOrder[i], lines: String(call[0]).split("\n") });
   });
-  return calls
-    .sort((a, b) => a.order - b.order)
-    .flatMap((c) => c.lines);
+  return calls.sort((a, b) => a.order - b.order).flatMap((c) => c.lines);
 }
 
 function expectNoConsecutiveBlankLines(lines: string[]) {
   for (let i = 1; i < lines.length; i++) {
     if (lines[i - 1] === "" && lines[i] === "") {
-      throw new Error(`consecutive blank lines at index ${i - 1}/${i} in:\n${lines.map((l) => `  ${JSON.stringify(l)}`).join("\n")}`);
+      throw new Error(
+        `consecutive blank lines at index ${i - 1}/${i} in:\n${lines.map((l) => `  ${JSON.stringify(l)}`).join("\n")}`
+      );
     }
   }
 }
@@ -121,9 +121,7 @@ describe("verify", () => {
 
     it("never produces two consecutive blank lines with source section + banner + confirm all present", async () => {
       const deps = makeDeps({ branch: "release", answer: "y" });
-      expect(
-        await verify({}, { ...deps, ...config({ requireBranch: "release", warnProduction: true }) })
-      ).toBe(0);
+      expect(await verify({}, { ...deps, ...config({ requireBranch: "release", warnProduction: true }) })).toBe(0);
       expectNoConsecutiveBlankLines(orderedOutputLines(deps));
     });
 
@@ -156,7 +154,6 @@ describe("verify", () => {
       expectNoConsecutiveBlankLines(orderedOutputLines(deps));
     });
   });
-
 
   it("allows a whitelisted target after confirmation", async () => {
     const deps = makeDeps({ answer: "y" });
