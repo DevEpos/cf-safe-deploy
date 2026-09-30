@@ -24,12 +24,12 @@
       <tspan x="58" y="184">📦  CF Space:     web-apps</tspan>
 
       <tspan x="24" y="220" fill="#f38ba8">┌───────────────────────────────────────────────────────┐</tspan>
-      <tspan x="24" y="242"><tspan fill="#f38ba8">│ ⚠️ </tspan><tspan fill="#f38ba8" font-weight="bold">PRODUCTION</tspan><tspan fill="#f38ba8"> DEPLOYMENT TARGET                        │</tspan></tspan>
-      <tspan x="24" y="264" fill="#f38ba8">│ Proceed with caution — this action is not reversible. │</tspan>
+      <tspan x="24" y="242"><tspan fill="#f38ba8">│</tspan><tspan fill="#cdd6f4"> ⚠️ </tspan><tspan fill="#f38ba8" font-weight="bold">PRODUCTION</tspan><tspan fill="#cdd6f4"> DEPLOYMENT TARGET                      </tspan><tspan fill="#f38ba8">│</tspan></tspan>
+      <tspan x="24" y="264"><tspan fill="#f38ba8">│</tspan><tspan fill="#cdd6f4"> Proceed with caution — this action is not reversible. </tspan><tspan fill="#f38ba8">│</tspan></tspan>
       <tspan x="24" y="286" fill="#f38ba8">└───────────────────────────────────────────────────────┘</tspan>
 
       <tspan x="24" y="322" fill="#f9e2af">❓  Continue with deploy to acme-prod/web-apps? (y/N): </tspan><tspan fill="#cdd6f4">y</tspan>
-      <tspan x="24" y="344" fill="#a6e3a1">✅  Deploy allowed for acme-prod/web-apps</tspan>
+      <tspan x="24" y="344" fill="#a6e3a1">✅  Deployment allowed for acme-prod/web-apps</tspan>
     </text>
   </g>
 </svg>
