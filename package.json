@@ -1,6 +1,6 @@
 {
   "name": "cf-safe-deploy",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Safety net for manual Cloud Foundry MTA deployments: verifies the targeted org/space against a whitelist, enforces git branch rules for protected targets and asks for confirmation before the deploy proceeds",
   "type": "module",
   "license": "MIT",
