@@ -65,7 +65,99 @@ const config = (target: Partial<Config["allowedTargets"][number]> = {}): Pick<Ve
   })
 });
 
+type Deps = ReturnType<typeof makeDeps>;
+
+/**
+ * Reconstructs the actual terminal output as a flat, chronologically ordered
+ * list of lines, merging log.info/warn/error and the ask() prompt (which are
+ * separate mocks, so call order must be recovered via invocationCallOrder).
+ */
+function orderedOutputLines(deps: Deps): string[] {
+  const calls: { order: number; lines: string[] }[] = [];
+  for (const level of ["info", "warn", "error"] as const) {
+    const mock = deps.log[level].mock;
+    mock.calls.forEach((call, i) => {
+      calls.push({ order: mock.invocationCallOrder[i], lines: String(call[0]).split("\n") });
+    });
+  }
+  deps.ask.mock.calls.forEach((call: unknown[], i) => {
+    calls.push({ order: deps.ask.mock.invocationCallOrder[i], lines: String(call[0]).split("\n") });
+  });
+  return calls
+    .sort((a, b) => a.order - b.order)
+    .flatMap((c) => c.lines);
+}
+
+function expectNoConsecutiveBlankLines(lines: string[]) {
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i - 1] === "" && lines[i] === "") {
+      throw new Error(`consecutive blank lines at index ${i - 1}/${i} in:\n${lines.map((l) => `  ${JSON.stringify(l)}`).join("\n")}`);
+    }
+  }
+}
+
 describe("verify", () => {
+  describe("blank-line separators between sections", () => {
+    it("never produces two consecutive blank lines for a plain confirm flow", async () => {
+      const deps = makeDeps({ answer: "y" });
+      expect(await verify({}, { ...deps, ...config() })).toBe(0);
+      expectNoConsecutiveBlankLines(orderedOutputLines(deps));
+    });
+
+    it("never produces two consecutive blank lines when a source section precedes the confirm prompt", async () => {
+      const deps = makeDeps({ branch: "release", behind: 0, answer: "y" });
+      expect(await verify({}, { ...deps, ...config({ requireBranch: "release", requireUpToDate: true }) })).toBe(0);
+      const lines = orderedOutputLines(deps);
+      expectNoConsecutiveBlankLines(lines);
+      // regression guard: source section + confirm used to stack two blanks back to back
+      expect(lines.filter((l) => l === "").length).toBeGreaterThan(0);
+    });
+
+    it("never produces two consecutive blank lines when a production banner precedes the confirm prompt", async () => {
+      const deps = makeDeps({ answer: "y" });
+      expect(await verify({}, { ...deps, ...config({ warnProduction: true }) })).toBe(0);
+      expectNoConsecutiveBlankLines(orderedOutputLines(deps));
+    });
+
+    it("never produces two consecutive blank lines with source section + banner + confirm all present", async () => {
+      const deps = makeDeps({ branch: "release", answer: "y" });
+      expect(
+        await verify({}, { ...deps, ...config({ requireBranch: "release", warnProduction: true }) })
+      ).toBe(0);
+      expectNoConsecutiveBlankLines(orderedOutputLines(deps));
+    });
+
+    it("does not insert a blank line between the confirm prompt and the aborted-deploy error", async () => {
+      const deps = makeDeps({ answer: "n" });
+      expect(await verify({}, { ...deps, ...config() })).toBe(1);
+      const lines = orderedOutputLines(deps);
+      expectNoConsecutiveBlankLines(lines);
+      const promptIndex = lines.findIndex((l) => l.includes("Continue with deployment"));
+      expect(lines[promptIndex + 1]).not.toBe("");
+    });
+
+    it("does not insert a blank line between the confirm prompt and the success message", async () => {
+      const deps = makeDeps({ answer: "y" });
+      expect(await verify({}, { ...deps, ...config() })).toBe(0);
+      const lines = orderedOutputLines(deps);
+      const promptIndex = lines.findIndex((l) => l.includes("Continue with deployment"));
+      expect(lines[promptIndex + 1]).not.toBe("");
+    });
+
+    it("never produces two consecutive blank lines when a mid-section error follows detail lines", async () => {
+      const deps = makeDeps({ branch: "main" });
+      expect(await verify({}, { ...deps, ...config({ requireBranch: "release" }) })).toBe(1);
+      expectNoConsecutiveBlankLines(orderedOutputLines(deps));
+    });
+
+    it("never produces two consecutive blank lines when the target is not whitelisted", async () => {
+      const deps = makeDeps({ org: "acme-prod", space: "other-space" });
+      expect(await verify({}, { ...deps, ...config() })).toBe(1);
+      expectNoConsecutiveBlankLines(orderedOutputLines(deps));
+    });
+  });
+
+
   it("allows a whitelisted target after confirmation", async () => {
     const deps = makeDeps({ answer: "y" });
     expect(await verify({}, { ...deps, ...config() })).toBe(0);

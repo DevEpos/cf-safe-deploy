@@ -66,16 +66,24 @@ export async function verify(
   try {
     const { allowedTargets } = loadConfig({ cwd, configPath });
 
+    // Ensures exactly one blank line between sections, however the branches below combine.
+    let needsSeparator = false;
+    const separate = () => {
+      if (needsSeparator) log.info("");
+      needsSeparator = true;
+    };
+
     const { org, space, apiEndpoint, region } = getCfTarget({ exec });
+    separate();
     log.info(`${icon("target", rich)}  Resolved target`);
     log.info(detailLine("endpoint", rich, "API Endpoint:", apiEndpoint ?? "unknown"));
     log.info(detailLine("region", rich, "CF Region:", region ?? "unknown"));
     log.info(detailLine("org", rich, "CF Org:", org));
     log.info(detailLine("space", rich, "CF Space:", space));
-    log.info("");
 
     const target = allowedTargets.find((candidate) => candidate.org === org && candidate.space === space);
     if (!target) {
+      separate();
       log.error(`${icon("fail", rich)}  Target org "${org}" / space "${space}" is not whitelisted for deployment`);
       log.error(`    Allowed targets: ${allowedTargets.map((t) => `${t.org}/${t.space}`).join(", ")}`);
       return 1;
@@ -83,6 +91,7 @@ export async function verify(
 
     if (target.region !== undefined) {
       if (region === undefined) {
+        separate();
         log.error(
           `${icon("fail", rich)}  Deployments to ${org}/${space} require region "${target.region}", but no region ` +
             `could be extracted from API endpoint "${apiEndpoint ?? "<missing>"}" — expected an endpoint matching ` +
@@ -91,6 +100,7 @@ export async function verify(
         return 1;
       }
       if (region.toLowerCase() !== target.region.toLowerCase()) {
+        separate();
         log.error(
           `${icon("fail", rich)}  Targeted region "${colors.red(region)}" does not match the required region ` +
             `"${colors.green(target.region)}" for ${org}/${space}.`
@@ -101,11 +111,12 @@ export async function verify(
 
     if (target.requireBranch !== undefined || target.requireUpToDate) {
       const branch = getCurrentBranch({ exec });
+      separate();
       log.info(`${icon("source", rich)}  Resolved source`);
       log.info(detailLine("branch", rich, "Branch:", branch));
 
       if (target.requireBranch !== undefined && branch !== target.requireBranch) {
-        log.info("");
+        separate();
         log.error(`${icon("fail", rich)}  Current branch is "${colors.red(branch)}"`);
         log.error(
           `    Deployments to ${org}/${space} are only allowed from the "${colors.green(target.requireBranch)}" branch.`
@@ -116,7 +127,7 @@ export async function verify(
       if (target.requireUpToDate) {
         const behindCount = getBehindCount({ exec });
         if (behindCount > 0) {
-          log.info("");
+          separate();
           log.error(
             `${icon("fail", rich)}  Local branch "${branch}" is ${behindCount} commit(s) behind its remote ` +
               `tracking branch. Update it (e.g. \`git pull\`) before deploying to ${org}/${space}.`
@@ -124,10 +135,10 @@ export async function verify(
           return 1;
         }
       }
-      log.info("");
     }
 
     if (target.warnProduction) {
+      separate();
       const colorEnabled = colors.red("x") !== "x";
       log.warn(
         banner(
@@ -142,19 +153,23 @@ export async function verify(
 
     if (target.confirm && !yes) {
       if (!isTTY) {
+        separate();
         log.error(
           `${icon("fail", rich)}  Deploy to ${org}/${space} requires confirmation, but stdin is not interactive. ` +
             `Pass --yes to skip the prompt in non-interactive environments (e.g. CI).`
         );
         return 1;
       }
-      const answer = await ask(`\n${icon("confirm", rich)}  Continue with deployment to ${org}/${space}? (y/N): `);
+      separate();
+      const answer = await ask(`${icon("confirm", rich)}  Continue with deployment to ${org}/${space}? (y/N): `);
+      needsSeparator = false;
       if (!["y", "yes"].includes(answer.trim().toLowerCase())) {
         log.error(`${icon("fail", rich)}  Deployment aborted by user.`);
         return 1;
       }
     }
 
+    separate();
     log.info(`${icon("ok", rich)}  Deployment allowed for ${org}/${space}`);
     return 0;
   } catch (err) {
